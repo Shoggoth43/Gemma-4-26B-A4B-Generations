@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASCII_TERMINAL_v1.9</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/base16/terminal-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #0a0a0a; --panel-color: #141414; --accent-color: #00ff41;
+            --user-accent: #ffaa00; --user-dim: #996600;
+            --text-dim: #008f11; --error-color: #ff3e3e; --border-color: #333;
+        }
+        body { background-color: var(--bg-color); color: var(--accent-color); font-family: 'Fira Code', monospace; overflow: hidden; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: var(--text-dim); }
+        .btn-ascii {
+            border: 1px solid var(--accent-color); padding: 4px 12px; font-size: 0.7rem;
+            text-transform: uppercase; background: transparent; cursor: pointer; transition: 0.2s;
+        }
+        .btn-ascii:hover { background: var(--accent-color); color: var(--bg-color); box-shadow: 0 0 8px var(--accent-color); }
+        .btn-danger { border-color: var(--error-color); color: var(--error-color); }
+        .btn-danger:hover { background: var(--error-color); color: white; }
+        .input-ascii {
+            background: transparent; border: 1px solid var(--text-dim); color: var(--accent-color);
+            padding: 10px; outline: none;
+        }
+        .model-selector-container { position: relative; }
+        .model-dropdown {
+            position: absolute; top: 100%; left: 0; width: 100%; max-height: 200px;
+            background: #0f0f0f; border: 1px solid var(--accent-color);
+            display: none; overflow-y: auto; z-index: 100; margin-top: 4px;
+        }
+        .model-option { padding: 8px; font-size: 0.7rem; cursor: pointer; border-bottom: 1px solid #222; }
+        .model-option:hover { background: var(--accent-color); color: var(--bg-color); }
+
+        /* ── AI message card (unchanged green) ── */
+        .msg-card { border-left: 2px solid var(--text-dim); padding: 1rem; margin-bottom: 1.5rem; position: relative; background: #0f0f0f; }
+
+        /* ── User message card (amber) ── */
+        .msg-user {
+            border-left: 2px solid var(--user-accent);
+            background: #100d00;
+        }
+        .msg-user .content { color: var(--user-accent); }
+        .msg-user .role-label { color: var(--user-accent) !important; }
+        .msg-user .msg-actions button { color: var(--user-dim); }
+        .msg-user .msg-actions button:hover { color: var(--user-accent); }
+
+        .content { color: var(--accent-color); overflow-wrap: break-word; }
+        .content h1, .content h2, .content h3 { color: var(--accent-color); font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; text-transform: uppercase; border-bottom: 1px solid #222; }
+        .content p { margin-bottom: 0.75rem; }
+        .content ul, .content ol { margin-left: 1.5rem; margin-bottom: 1rem; list-style-type: square; }
+        .content code:not(pre code) { background: #1a1a1a; padding: 2px 4px; border-radius: 2px; color: #fff; font-size: 0.9em; }
+        .content strong { color: #fff; font-weight: bold; }
+        .content em { color: var(--text-dim); }
+        .code-container { position: relative; margin: 1rem 0; border: 1px solid var(--text-dim); border-radius: 2px; overflow: hidden; }
+        .code-header {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #1a1a1a; padding: 4px 8px; font-size: 0.65rem; color: var(--text-dim);
+            border-bottom: 1px solid var(--text-dim);
+        }
+        .code-copy-btn { cursor: pointer; transition: 0.2s; }
+        .code-copy-btn:hover { color: var(--accent-color); }
+        pre { margin: 0 !important; padding: 1rem !important; background: #050505 !important; overflow-x: auto; }
+        .streaming-code-block { margin: 1rem 0; border: 1px solid var(--text-dim); border-radius: 2px; overflow: hidden; }
+        .streaming-code-block .code-header { background: #1a1a1a; padding: 4px 8px; font-size: 0.65rem; color: var(--text-dim); border-bottom: 1px solid var(--text-dim); display: flex; justify-content: space-between; }
+        .streaming-code-block pre { margin: 0 !important; padding: 1rem !important; background: #050505 !important; overflow-x: auto; color: var(--accent-color); white-space: pre-wrap; word-break: break-all; }
+        .hljs { background: transparent !important; color: var(--accent-color) !important; }
+        .hljs-comment, .hljs-quote { color: var(--text-dim) !important; }
+        .hljs-keyword, .hljs-selector-tag, .hljs-string, .hljs-title { color: #fff !important; }
+        .hljs-number, .hljs-variable { color: #00ccff !important; }
+        #modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+            display: none; align-items: center; justify-content: center; z-index: 1000;
+        }
+        .modal-content { width: 80%; max-width: 600px; background: var(--bg-color); border: 2px solid var(--accent-color); padding: 20px; }
+        input[type=range] { -webkit-appearance: none; background: transparent; width: 100%; }
+        input[type=range]::-webkit-slider-runnable-track { height: 2px; background: var(--text-dim); }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 12px; width: 12px; background: var(--accent-color); margin-top: -5px; cursor: pointer; }
+        .chat-container { height: calc(100vh - 200px); overflow-y: auto; }
+        .sidebar { width: 320px; border-left: 1px solid var(--border-color); height: 100vh; }
+    </style>
+</head>
+<body class="flex">
+    <div id="modal-overlay">
+        <div class="modal-content">
+            <div class="text-xs mb-2 opacity-50 text-center">>> EDIT_BUFFER_ACTIVE <<</div>
+            <textarea id="modal-textarea" class="w-full h-48 input-ascii resize-none mb-4 text-sm"></textarea>
+            <div class="flex justify-end gap-4">
+                <button onclick="closeModal()" class="btn-ascii btn-danger">ABORT</button>
+                <button onclick="commitEdit()" class="btn-ascii">EXECUTE_UPDATE</button>
+            </div>
+        </div>
+    </div>
+    <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 bg-green-500 text-black px-4 py-1 text-xs font-bold hidden z-[2000]"></div>
+    <main class="flex-1 flex flex-col">
+        <header class="flex justify-between items-center border-b border-zinc-800 p-4">
+            <div class="model-selector-container">
+                <button id="model-btn" onclick="toggleDropdown()" class="btn-ascii flex items-center gap-2">
+                    <span id="selected-model-name">SELECT_MODEL</span>
+                    <span class="text-[10px]">▼</span>
+                </button>
+                <div id="model-dropdown" class="model-dropdown">
+                    <div class="p-2 text-[9px] opacity-50 text-center">LOADING_MODELS...</div>
+                </div>
+            </div>
+            <button onclick="clearHistory()" class="btn-ascii btn-danger">PURGE_MEMORY</button>
+        </header>
+        <div id="chat-window" class="chat-container p-4">
+
+        </div>
+        <div class="px-4 space-y-3">
+            <div class="relative">
+                <textarea id="user-input" class="w-full h-32 input-ascii resize-none pr-24" placeholder="input_prompt..."></textarea>
+                <div id="abort-container" class="absolute right-2 bottom-4 hidden">
+                    <button onclick="abortGeneration()" class="btn-ascii btn-danger">ABORT</button>
+                </div>
+            </div>
+            <div id="input-controls" class="flex justify-end hidden">
+                <button onclick="sendMessage()" id="send-btn" class="btn-ascii px-10 hidden">EXECUTE</button>
+            </div>
+        </div>
+    </main>
+    <aside class="sidebar bg-[#050505] p-5 overflow-y-auto">
+        <div class="text-xs font-bold mb-6 opacity-50 border-b border-zinc-800 pb-2">CONFIG_MODULE</div>
+        <div class="space-y-4 mb-8">
+            <div>
+                <label class="text-xs block text-zinc-500 mb-2">ENDPOINT</label>
+                <input type="text" id="cfg-url" class="w-full input-ascii text-[10px]" value="http://localhost:1234/v1/chat/completions">
+            </div>
+        </div>
+        <div class="mb-8">
+            <label class="text-xs block text-zinc-500 mb-2">SYSTEM_PROMPT</label>
+            <textarea id="cfg-system" class="w-full input-ascii text-[10px] h-24 resize-none">You are a helpful AI terminal assistant.</textarea>
+        </div>
+        <div class="mb-8">
+            <label class="text-xs block text-zinc-500 mb-2">PARAMETERS</label>
+            <div class="space-y-4" id="sliders-container"></div>
+        </div>
+    </aside>
+    <script>
+        // ============================================================
+        // STATE
+        // ============================================================
+        let conversationHistory = [];
+        let activeEditId = null;
+        let abortController = null;
+        let isGenerating = false;
+        let selectedModelId = "";
+        const parameters = { temp: 0.7, top_p: 1.0, top_k: 50, min_p: 0.05, repeat_penalty: 1.1, presence_penalty: 0.0 };
+        marked.setOptions({
+            highlight: (code, lang) => {
+                const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+                return hljs.highlight(code, { language }).value;
+            },
+            langPrefix: 'hljs language-'
+        });
+        window.onload = () => {
+            renderSliders();
+            fetchModels();
+            document.getElementById('user-input').addEventListener('keydown', e => {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+            });
+            document.addEventListener('click', e => {
+                if (!e.target.closest('.model-selector-container')) toggleDropdown(false);
+            });
+        };
+        // ============================================================
+        // STREAMING RENDERER — STATE MACHINE
+        // ============================================================
+        function parseSegments(text) {
+            const segments = [];
+            const FENCE_RE = /^(`{3,}|~{3,})(\w*)\s*$/;
+            const lines = text.split('\n');
+            let i = 0;
+            while (i < lines.length) {
+                const m = lines[i].match(FENCE_RE);
+                if (m) {
+                    const fenceChar = m[1][0];
+                    const fenceLen = m[1].length;
+                    const lang = m[2] || 'text';
+                    const codeLines = [];
+                    i++;
+                    let closed = false;
+                    while (i < lines.length) {
+                        const closingRe = new RegExp(`^[${fenceChar}]{${fenceLen},}\\s*$`);
+                        if (closingRe.test(lines[i])) { closed = true; i++; break; }
+                        codeLines.push(lines[i]);
+                        i++;
+                    }
+                    segments.push({ type: 'code', lang, code: codeLines.join('\n'), closed });
+                } else {
+                    const proseLines = [];
+                    while (i < lines.length && !lines[i].match(FENCE_RE)) { proseLines.push(lines[i]); i++; }
+                    const text = proseLines.join('\n').trim();
+                    if (text) segments.push({ type: 'markdown', text });
+                }
+            }
+            return segments;
+        }
+        function buildCodeBlockHTML(lang, code) {
+            const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+            const highlighted = hljs.highlight(code, { language }).value;
+            const escapedCode = DOMPurify.sanitize(highlighted);
+            return `
+                <div class="code-container">
+                    <div class="code-header">
+                        <span>${lang.toUpperCase()}</span>
+                        <span class="code-copy-btn" onclick="copyCodeBlock(this)">[COPY]</span>
+                    </div>
+                    <pre><code class="hljs language-${lang}">${escapedCode}</code></pre>
+                </div>`;
+        }
+        function buildStreamingCodeBlockHTML(lang, code) {
+            const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+            const highlighted = DOMPurify.sanitize(hljs.highlight(code, { language }).value);
+            return `
+                <div class="streaming-code-block">
+                    <div class="code-header">
+                        <span>${lang.toUpperCase()}</span>
+                        <span style="opacity:0.4">STREAMING...</span>
+                    </div>
+                    <pre><code class="hljs language-${lang}">${highlighted}</code></pre>
+                </div>`;
+        }
+        function renderStreaming(fullResponse) {
+            const segments = parseSegments(fullResponse);
+            let html = '';
+            segments.forEach(seg => {
+                if (seg.type === 'markdown') {
+                    html += DOMPurify.sanitize(marked.parse(seg.text));
+                } else {
+                    html += seg.closed ? buildCodeBlockHTML(seg.lang, seg.code) : buildStreamingCodeBlockHTML(seg.lang, seg.code);
+                }
+            });
+            return html;
+        }
+        function renderFinal(fullResponse) {
+            const segments = parseSegments(fullResponse);
+            let html = '';
+            segments.forEach(seg => {
+                if (seg.type === 'markdown') {
+                    html += DOMPurify.sanitize(marked.parse(seg.text));
+                } else {
+                    html += buildCodeBlockHTML(seg.lang, seg.code);
+                }
+            });
+            return html;
+        }
+        function renderMarkdown(text) {
+            if (!text) return '';
+            return renderFinal(text);
+        }
+        // ============================================================
+        // COPY CODE BLOCK
+        // ============================================================
+        async function copyCodeBlock(btn) {
+            const container = btn.closest('.code-container');
+            const code = container.querySelector('code').innerText;
+            await navigator.clipboard.writeText(code);
+            showToast('CODE_BUFFER_COPIED');
+        }
+        // ============================================================
+        // MODEL MANAGEMENT
+        // ============================================================
+        async function fetchModels() {
+            const dropdown = document.getElementById('model-dropdown');
+            const urlBase = document.getElementById('cfg-url').value.replace('/chat/completions', '');
+            try {
+                const response = await fetch(`${urlBase}/models`);
+                if (!response.ok) throw new Error('CONNECTION_FAILED');
+                const data = await response.json();
+                dropdown.innerHTML = '';
+                if (data.data && data.data.length > 0) {
+                    data.data.forEach(model => {
+                        const opt = document.createElement('div');
+                        opt.className = 'model-option';
+                        opt.innerText = `> ${model.id}`;
+                        opt.onclick = () => selectModel(model.id);
+                        dropdown.appendChild(opt);
+                    });
+                } else {
+                    dropdown.innerHTML = "<div class='p-2 text-[9px] text-red-500'>NO_MODELS_FOUND</div>";
+                }
+            } catch {
+                dropdown.innerHTML = "<div class='p-2 text-[9px] text-red-500'>FETCH_ERROR</div>";
+            }
+        }
+        function toggleDropdown(force) {
+            const dropdown = document.getElementById('model-dropdown');
+            dropdown.style.display = (force === false) ? 'none' : (dropdown.style.display === 'block' ? 'none' : 'block');
+        }
+        function selectModel(id) {
+            selectedModelId = id;
+            document.getElementById('selected-model-name').innerText = id.substring(0, 15) + (id.length > 15 ? '...' : '');
+            toggleDropdown(false);
+            showToast(`MODEL_LOADED: ${id}`);
+        }
+        // ============================================================
+        // SLIDERS
+        // ============================================================
+        function renderSliders() {
+            const container = document.getElementById('sliders-container');
+            const config = [
+                { id: 'temp', label: 'Temp', min: 0, max: 1, step: 0.01 },
+                { id: 'top_p', label: 'Top P', min: 0, max: 1, step: 0.01 },
+                { id: 'top_k', label: 'Top K', min: 1, max: 100, step: 1 },
+                { id: 'min_p', label: 'Min P', min: 0, max: 1, step: 0.01 },
+                { id: 'repeat_penalty', label: 'Rep Penalty', min: 1, max: 2, step: 0.01 },
+                { id: 'presence_penalty', label: 'Pres Penalty', min: -2, max: 2, step: 0.1 },
+            ];
+            container.innerHTML = config.map(cfg => `
+                <div class="input-ascii">
+                    <div class="flex justify-between text-[9px] mb-1"><span class="uppercase ">${cfg.label}</span><span id="val-${cfg.id}">${parameters[cfg.id]}</span></div>
+                    <input type="range" min="${cfg.min}" max="${cfg.max}" step="${cfg.step}" value="${parameters[cfg.id]}" oninput="updateParam('${cfg.id}', this.value)">
+                </div>
+            `).join('');
+        }
+        function updateParam(key, val) {
+            parameters[key] = parseFloat(val);
+            document.getElementById(`val-${key}`).innerText = val;
+        }
+        // ============================================================
+        // MESSAGE DOM
+        // ============================================================
+        function appendMessage(role, content, id = null) {
+            const win = document.getElementById('chat-window');
+            const msgId = id || 'm-' + Math.random().toString(36).substr(2, 9);
+            const div = document.createElement('div');
+            div.id = msgId;
+            div.dataset.role = role;
+            div.className = `msg-card ${role === 'user' ? 'msg-user' : 'msg-ai'}`;
+            const isAssistant = role === 'assistant';
+            const display = isAssistant ? renderMarkdown(content) : content;
+            div.innerHTML = `
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-[9px] font-bold opacity-50 role-label">${role.toUpperCase()}</span>
+                    <div class="flex gap-3 msg-actions" style="opacity: 0.4">
+                        ${role === 'user'
+                            ? `<button onclick="openEditModal('${msgId}')" class="text-[9px] hover:text-white">EDIT</button>`
+                            : `<button onclick="regenerate('${msgId}')" class="text-[9px] hover:text-white">REGEN</button>`}
+                        <button onclick="copyText('${msgId}')" class="text-[9px] hover:text-white">COPY</button>
+                    </div>
+                </div>
+                <div class="content text-sm leading-relaxed">${display}</div>
+            `;
+            div.onmouseenter = () => div.querySelector('.msg-actions').style.opacity = '1';
+            div.onmouseleave = () => div.querySelector('.msg-actions').style.opacity = '0.4';
+            win.appendChild(div);
+            win.scrollTop = win.scrollHeight;
+            return div;
+        }
+        // ============================================================
+        // EDIT MODAL
+        // ============================================================
+        function openEditModal(id) {
+            activeEditId = id;
+            rebuildHistoryFromDOM();
+            const cards = Array.from(document.querySelectorAll('.msg-card'));
+            const targetIdx = cards.findIndex(el => el.id === id);
+            if (targetIdx !== -1) {
+                document.getElementById('modal-textarea').value = conversationHistory[targetIdx].content;
+                document.getElementById('modal-overlay').style.display = 'flex';
+            }
+        }
+        function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
+        async function commitEdit() {
+            if (!activeEditId) return;
+            const newText = document.getElementById('modal-textarea').value;
+            rebuildHistoryFromDOM();
+            const cards = Array.from(document.querySelectorAll('.msg-card'));
+            const targetIdx = cards.findIndex(el => el.id === activeEditId);
+            conversationHistory[targetIdx].content = newText;
+            conversationHistory = conversationHistory.slice(0, targetIdx + 1);
+            document.getElementById('chat-window').innerHTML = '';
+            conversationHistory.forEach(m => appendMessage(m.role, m.content));
+            closeModal();
+            sendMessage(newText);
+        }
+        function rebuildHistoryFromDOM() {
+            const cards = document.querySelectorAll('.msg-card');
+            conversationHistory = Array.from(cards).map(card => ({
+                role: card.dataset.role,
+                content: card.querySelector('.content').innerText
+            }));
+        }
+        // ============================================================
+        // ABORT
+        // ============================================================
+        function abortGeneration() {
+            if (abortController) {
+                abortController.abort();
+                isGenerating = false;
+                showToast('GENERATION_ABORTED');
+            }
+        }
+        // ============================================================
+        // SEND MESSAGE + STREAMING
+        // ============================================================
+        async function sendMessage(overrideContent = null) {
+            if (isGenerating && !overrideContent) return;
+            if (!selectedModelId) { showToast('ERROR: SELECT_MODEL_FIRST'); return; }
+            const inputEl = document.getElementById('user-input');
+            const content = overrideContent || inputEl.value.trim();
+            if (!content) return;
+            isGenerating = true;
+            document.getElementById('input-controls').classList.add('hidden');
+            document.getElementById('abort-container').classList.remove('hidden');
+            if (!overrideContent) {
+                inputEl.value = '';
+                conversationHistory.push({ role: 'user', content });
+                appendMessage('user', content);
+            }
+            const aiDiv = appendMessage('assistant', '');
+            const contentDiv = aiDiv.querySelector('.content');
+            let fullResponse = '';
+            abortController = new AbortController();
+            try {
+                const response = await fetch(document.getElementById('cfg-url').value, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    signal: abortController.signal,
+                    body: JSON.stringify({
+                        model: selectedModelId,
+                        messages: [{ role: 'system', content: document.getElementById('cfg-system').value }, ...conversationHistory],
+                        temperature: parameters.temp,
+                        top_p: parameters.top_p,
+                        top_k: parameters.top_k,
+                        min_p: parameters.min_p,
+                        repeat_penalty: parameters.repeat_penalty,
+                        presence_penalty: parameters.presence_penalty,
+                        stream: true
+                    })
+                });
+                if (!response.ok) throw new Error(`HTTP_${response.status}`);
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let renderPending = false;
+                const scheduleRender = () => {
+                    if (renderPending) return;
+                    renderPending = true;
+                    requestAnimationFrame(() => {
+                        contentDiv.innerHTML = renderStreaming(fullResponse);
+                        document.getElementById('chat-window').scrollTop = document.getElementById('chat-window').scrollHeight;
+                        renderPending = false;
+                    });
+                };
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    const chunk = decoder.decode(value, { stream: true });
+                    for (const line of chunk.split('\n')) {
+                        if (!line.startsWith('data: ') || line === 'data: [DONE]') continue;
+                        try {
+                            const data = JSON.parse(line.substring(6));
+                            const delta = data.choices?.[0]?.delta?.content || '';
+                            if (delta) { fullResponse += delta; scheduleRender(); }
+                        } catch { /* malformed chunk — skip */ }
+                    }
+                }
+                contentDiv.innerHTML = renderFinal(fullResponse);
+                conversationHistory.push({ role: 'assistant', content: fullResponse });
+            } catch (err) {
+                if (err.name === 'AbortError') {
+                    if (fullResponse) contentDiv.innerHTML = renderFinal(fullResponse);
+                    contentDiv.innerHTML += `<span style="color:var(--error-color);display:block;margin-top:0.5rem">[ GENERATION_ABORTED ]</span>`;
+                    if (fullResponse) conversationHistory.push({ role: 'assistant', content: fullResponse });
+                } else {
+                    contentDiv.innerHTML = `<span style="color:var(--error-color)">[ ERROR: ${err.message} ]</span>`;
+                }
+            } finally {
+                isGenerating = false;
+                document.getElementById('abort-container').classList.add('hidden');
+                document.getElementById('input-controls').classList.remove('hidden');
+                abortController = null;
+            }
+        }
+        // ============================================================
+        // REGENERATE
+        // ============================================================
+        function regenerate(id) {
+            if (isGenerating) return;
+            let lastUserIdx = -1;
+            for (let i = conversationHistory.length - 1; i >= 0; i--) {
+                if (conversationHistory[i].role === 'user') { lastUserIdx = i; break; }
+            }
+            if (lastUserIdx !== -1) {
+                conversationHistory = conversationHistory.slice(0, lastUserIdx + 1);
+                document.getElementById('chat-window').innerHTML = '';
+                conversationHistory.forEach(m => appendMessage(m.role, m.content));
+                sendMessage(conversationHistory[lastUserIdx].content);
+            }
+        }
+        // ============================================================
+        // UTILITIES
+        // ============================================================
+        function clearHistory() {
+            conversationHistory = [];
+            document.getElementById('chat-window').innerHTML = '<div class="text-zinc-700 text-xs italic">[ Buffer Purged ]</div>';
+            showToast('MEMORY_CLEARED');
+        }
+        async function copyText(id) {
+            const text = document.getElementById(id).querySelector('.content').innerText;
+            await navigator.clipboard.writeText(text);
+            showToast('BUFFER_COPIED');
+        }
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.remove('hidden');
+            setTimeout(() => t.classList.add('hidden'), 2000);
+        }
+    </script>
+</body>
+</html>
