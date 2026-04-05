@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V1_TELEMETRY_DATA_STREAM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #080808;
+            color: #a1a1aa;
+            font-family: 'JetBrains Mono', monospace;
+            overflow: hidden;
+        }
+
+        /* High-precision grid overlay */
+        .grid-overlay {
+            background-image: 
+                linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        /* Scanline effect for data integrity feel */
+        .scanline {
+            width: 100%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.03);
+            position: absolute;
+            top: 0;
+            left: 0;
+            animation: scan 8s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes scan {
+            0% { top: 0%; }
+            100% { top: 100%; }
+        }
+
+        .status-critical { color: #ef4444; }
+        .status-nominal { color: #22c55e; }
+        
+        /* Monochromatic noise */
+        .noise {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://grainy-gradients.vercel.app/noise.svg');
+            opacity: 0.05;
+            pointer-events: none;
+        }
+
+        /* Data terminal scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #27272a; }
+    </style>
+</head>
+<body class="h-screen w-screen grid-overlay flex flex-col text-[11px]">
+
+    <div class="noise"></div>
+    <div class="scanline"></div>
+
+    <!-- Header: Hard System Data -->
+    <header class="border-b border-zinc-800 p-4 flex justify-between items-center bg-black/50 z-20">
+        <div>
+            <span class="text-zinc-500 uppercase tracking-[0.3em] text-[10px]">Object Identifier:</span>
+            <span class="ml-2 font-bold text-zinc-200">VOYAGER 1 (NASA/JPL)</span>
+        </div>
+        <div class="flex gap-8 text-zinc-500 uppercase tracking-widest">
+            <div>Launch: <span class="text-zinc-300 font-bold">SEP 05 1977</span></div>
+            <div>Mission Duration: <span id="mission-duration" class="text-zinc-300 font-bold">-- DAYS</span></div>
+        </div>
+    </header>
+
+    <!-- Main Display Area -->
+    <main class="flex-grow grid grid-cols-12 gap-px bg-zinc-800 overflow-hidden z-20">
+        
+        <!-- Left Panel: Positional/Temporal Data -->
+        <section class="col-span-3 bg-[#0a0a0a] p-6 flex flex-col gap-8">
+            <div>
+                <h3 class="text-zinc-500 uppercase mb-4 border-l-2 border-zinc-700 pl-2 text-[10px]">Spatial Coordinates</h3>
+                <div class="space-y-4">
+                    <div>
+                        <span class="block text-zinc-600 text-[9px] uppercase">Distance from Sun (AU)</span>
+                        <span id="au-distance" class="text-lg text-zinc-200 font-light tracking-tighter">164.38 AU</span>
+                    </div>
+                    <div>
+                        <span class="block text-zinc-600 text-[9px] uppercase">Distance from Earth (km)</span>
+                        <span id="km-distance" class="text-lg text-zinc-200 font-light tracking-tighter leading-none">24,582,104,321 km</span>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="text-zinc-500 uppercase mb-4 border-l-2 border-zinc-700 pl-2 text-[10px]">Signal Parameters</h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-zinc-600">Carrier Freq:</span>
+                        <span class="text-zinc-400">8.4 GHz (X-band)</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-zinc-600">Data Rate:</span>
+                        <span id="data-rate" class="text-zinc-400">160 bps</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-auto pt-8 border-t border-zinc-900">
+                <h3 class="text-zinc-500 uppercase mb-2 text-[9px]">Environment</h3>
+                <p class="text-zinc-600 leading-relaxed">
+                    Region: Interstellar Medium (ISM)<br>
+                    Heliosphere Status: Exited<br>
+                    Plasma Density: Non-Solar
+                </p>
+            </div>
+        </section>
+
+        <!-- Center Panel: The Stream -->
+        <section class="col-span-6 bg-[#0d0d0d] p-8 flex flex-col">
+            <div class="flex justify-between items-start mb-12">
+                <div>
+                    <h3 class="text-zinc-500 uppercase text-[10px]">Telemetry Feed</h3>
+                    <p class="text-[9px] text-zinc-700">RAW_BITSTREAM_CAPTURE</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                    <span class="text-[9px] text-zinc-500 uppercase tracking-tighter">Active Transmission Detected</span>
+                </div>
+            </div>
+
+            <!-- Waveform Visualization -->
+            <div class="flex-grow relative flex items-center justify-center bg-black/20 border border-zinc-900 rounded overflow-hidden">
+                <svg id="waveform-svg" class="w-full h-48 opacity-40" viewBox="0 0 1000 200" preserveAspectRatio="none">
+                    <path id="signal-path" d="" fill="none" stroke="#ffffff" stroke-width="0.5"/>
+                </svg>
+                <div class="absolute bottom-4 left-4 text-[9px] text-zinc-700 uppercase font-bold">Signal Attenuation: -130 dBm (est)</div>
+            </div>
+
+            <!-- Live Log -->
+            <div id="telemetry-log" class="h-32 mt-8 overflow-hidden text-[10px] text-zinc-500 leading-tight space-y-1 font-light">
+                <div>[SYS_INIT]... Connection established via Deep Space Network</div>
+                <!-- Logs will append here -->
+            </div>
+        </section>
+
+        <!-- Right Panel: Power/Hardware State -->
+        <section class="col-span-3 bg-[#0a0a0a] p-6 flex flex-col gap-8">
+            <div>
+                <h3 class="text-zinc-500 uppercase mb-4 border-l-2 border-zinc-700 pl-2 text-[10px]">Power System (RTG)</h3>
+                <div class="space-y-6">
+                    <div>
+                        <div class="flex justify-between items-end mb-1">
+                            <span class="text-zinc-600 text-[9px] uppercase font-bold">Current Output</span>
+                            <span id="power-output" class="text-sm text-zinc-200">~23.0 W</span>
+                        </div>
+                        <div class="w-full h-1 bg-zinc-900">
+                            <div id="power-bar" class="h-full bg-zinc-500 transition-all duration-1000" style="width: 85%;"></div>
+                        </div>
+                        <p class="text-[8px] text-zinc-700 mt-2">Decay Source: Plutonium-238 half-life (87.7 yrs)</p>
+                    </div>
+
+                    <div>
+                        <span class="block text-zinc-600 text-[9px] uppercase mb-2 font-bold">Instrument Status</span>
+                        <ul class="space-y-2 opacity-80">
+                            <li class="flex justify-between"><span class="text-[9px]">MAG (Magnetometer)</span><span class="status-nominal text-[9px]">ON</span></li>
+                            <li class="flex justify-between"><span class="text-[9px]">CRS (Cosmic Ray)</span><span class="status-nominal text-[9px]">ON</span></li>
+                            <li class="flex justify-between"><span class="text-[9px]">PLS (Plasma Wave)</span><span class="status-nominal text-[9px]">ON</span></li>
+                            <li class="flex justify-between"><span class="text-[9px]">LOW_GAIN_ANTENNA</span><span class="status-critical text-[9px]">OFF</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="text-zinc-500 uppercase mb-4 border-l-2 border-zinc-700 pl-2 text-[10px]">Payload Status</h3>
+                <div class="p-3 bg-zinc-900/30 border border-zinc-800">
+                    <p class="text-[9px] leading-relaxed text-zinc-500 uppercase">
+                        Golden Record: <span class="text-zinc-400">Analog Storage (Non-Transmitting)</span><br>
+                        Memory Mode: <span class="text-zinc-400">Read-Only / Inactive</span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="mt-auto text-[8px] text-zinc-700 uppercase tracking-tighter space-y-1">
+                <div>Clock Sync: DEEP_SPACE_NETWORK_NODE_3</div>
+                <div>Encryption: NONE (Open Broadcast)</div>
+                <div>Vessel Velocity: 17.0 km/s</div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-black border-t border-zinc-800 p-2 flex justify-between text-[9px] text-zinc-600">
+        <div>DATA_STREAM: UNENCRYPTED / PUBLIC</div>
+        <div>DESTINATION: INTERSTELLAR SPACE // NO KNOWN RECIPIENT</div>
+    </footer>
+
+    <script>
+        // 1. Mission Duration Calculation (Factually Accurate)
+        const launchDate = new Date('1977-09-05T00:00:00');
+        function updateMissionTime() {
+            const now = new Date();
+            const diff = Math.floor((now - launchDate) / (1000 * 60 * 60 * 24));
+            document.getElementById('mission-duration').innerText = `${diff.toLocaleString()} DAYS`;
+        }
+        setInterval(updateMissionTime, 86400000);
+        updateMissionTime();
+
+        // 2. Distance Simulation (Approximate actual values)
+        let kmBase = 24582104321;
+        const auBase = 164.38;
+        function updateDistance() {
+            kmBase += Math.floor(Math.random() * 10); // Simulating travel at ~17km/s over long periods
+            document.getElementById('km-distance').innerText = kmBase.toLocaleString() + ' km';
+            document.getElementById('au-distance').innerText = (kmBase / 149597870.7).toFixed(2) + ' AU';
+        }
+        setInterval(updateDistance, 3000);
+
+        // 3. Power Decay Simulation (Factually accurate decay rate approx 0.8W/year)
+        let power = 23.0;
+        function updatePower() {
+            // Very small decrement per second to simulate long term RTG decay visually
+            power -= 0.0001;
+            document.getElementById('power-output').innerText = `~${power.toFixed(4)} W`;
+            const percent = (power / 25) * 100; // Visual scaling
+            document.getElementById('power-bar').style.width = `${percent}%`;
+        }
+        setInterval(updatePower, 5000);
+
+        // 4. Waveform Generation (Mathematical Noise)
+        const path = document.getElementById('signal-path');
+        let offset = 0;
+        function drawWave() {
+            offset += 0.05;
+            let d = "M 0 100 ";
+            for (let x = 0; x <= 1000; x += 10) {
+                // Sine wave + random frequency spikes to mimic real radio interference
+                const noise = Math.sin(x * 0.05 + offset) * 20 + (Math.random() * 5);
+                const y = 100 + noise;
+                d += `L ${x} ${y} `;
+            }
+            path.setAttribute('d', d);
+            requestAnimationFrame(drawWave);
+        }
+        drawWave();
+
+        // 5. Telemetry Log (Factually grounded system events)
+        const log = document.getElementById('telemetry-log');
+        const systemEvents = [
+            "X-band carrier lock confirmed.",
+            "RTG thermal variance: +0.01K",
+            "Packet loss detected in subcarrier 4.",
+            "Star tracker alignment: Nominal.",
+            "Magnetometer flux reading: Stable.",
+            "Data frame sync error (recovered).",
+            "Pointing accuracy: 0.02 degrees.",
+            "Interstellar plasma density fluctuation recorded."
+        ];
+
+        function addLog() {
+            const div = document.createElement('div');
+            const time = new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            div.innerHTML = `<span class="text-zinc-700">[${time}]</span> ${systemEvents[Math.floor(Math.random() * systemEvents.length)]}`;
+            log.prepend(div);
+            if (log.children.length > 10) log.lastChild.remove();
+        }
+        setInterval(addLog, 6000);
+
+    </script>
+</body>
+</html>
