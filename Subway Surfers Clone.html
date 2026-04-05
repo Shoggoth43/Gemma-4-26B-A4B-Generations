@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Subway Runner 3D</title>
+    <style>
+        body { margin: 0; background: #000; overflow: hidden; font-family: sans-serif; }
+        canvas { display: block; margin: 0 auto; background: linear-gradient(#111, #333); }
+        #ui { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); color: white; font-size: 30px; pointer-events: none; text-shadow: 2px 2px #000; }
+        #menu { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: white; padding: 40px; text-align: center; border-radius: 20px; border: 2px solid #fff; }
+        button { padding: 10px 30px; font-size: 20px; cursor: pointer; background: #f00; color: white; border: none; border-radius: 5px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<div id="ui">Score: 0</div>
+<div id="menu">
+    <h1 id="title">NEON RUNNER</h1>
+    <p id="sub">Use A/D or Left/Right Arrows</p>
+    <button onclick="startGame()">START GAME</button>
+</div>
+
+<canvas id="gameCanvas"></canvas>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const ui = document.getElementById('ui');
+const menu = document.getElementById('menu');
+const title = document.getElementById('title');
+
+// Game Settings
+let width, height;
+let gameState = 'MENU';
+let score = 0;
+let speed = 0.15; // Movement delta per frame
+let cameraZ = 0;
+const lanes = [-150, 0, 150]; // X coordinates for the 3 lanes
+
+// Player Object
+const player = {
+    lane: 1,        // Target lane index (0, 1, 2)
+    currentX: 0,    // Smoothed X position
+    y: -40,         // Height offset
+    z: 0            // Z is relative to camera
+};
+
+let obstacles = [];
+
+function resize() {
+    width = canvas.width = Math.min(window.innerWidth, 500);
+    height = canvas.height = window.innerHeight;
+}
+
+window.addEventListener('resize', resize);
+resize();
+
+// Input handling
+window.addEventListener('keydown', (e) => {
+    if (gameState !== 'PLAYING') return;
+    if ((e.key === 'ArrowLeft' || e.key === 'a') && player.lane > 0) player.lane--;
+    if ((e.key === 'ArrowRight' || e.key === 'd') && player.lane < 2) player.lane++;
+});
+
+function startGame() {
+    gameState = 'PLAYING';
+    menu.style.display = 'none';
+    score = 0;
+    speed = 0.15;
+    obstacles = [];
+    player.lane = 1;
+    player.currentX = 0;
+}
+
+function gameOver() {
+    gameState = 'GAMEOVER';
+    menu.style.display = 'block';
+    title.innerText = "CRASHED!";
+    document.getElementById('sub').innerText = `Final Score: ${Math.floor(score)}`;
+}
+
+// 3D Projection Formula
+function project(x, y, z) {
+    const focalLength = 400;
+    // We add cameraZ to Z to move the world relative to player
+    const perspective = focalLength / (z + focalLength);
+    return {
+        x: (width / 2) + (x * perspective),
+        y: (height / 2 + 100) + (y * perspective), // Offset Y so ground is at bottom half
+        scale: perspective
+    };
+}
+
+function spawnObstacle() {
+    const laneIdx = Math.floor(Math.random() * 3);
+    obstacles.push({
+        x: lanes[laneIdx],
+        y: -40, // Height of obstacle
+        z: 1500, // Start far away in the distance
+        w: 80,
+        h: 80,
+        color: `hsl(${Math.random() * 360}, 70%, 50%)`
+    });
+}
+
+let frame = 0;
+function update() {
+    ctx.clearRect(0, 0, width, height);
+
+    if (gameState === 'PLAYING') {
+        frame++;
+        score += speed;
+        speed += 0.00005; // Slowly increase difficulty
+
+        // Player Lane Smoothing (Lerp)
+        const targetX = lanes[player.lane];
+        player.currentX += (targetX - player.currentX) * 0.2;
+
+        // Spawn Obstacles
+        if (frame % Math.floor(60 / (speed * 5)) === 0) {
+            spawnObstacle();
+        }
+
+        // Update Obstacles
+        for (let i = obstacles.length - 1; i >= 0; i--) {
+            let o = obstacles[i];
+            o.z -= speed * 40; // Move towards player
+
+            // Collision Check
+            // If obstacle is near the player's Z plane (approx 0 to 50)
+            if (o.z > -20 && o.z < 40) {
+                const distToLane = Math.abs(o.x - player.currentX);
+                if (distToLane < 60) {
+                    gameOver();
+                }
+            }
+
+            // Remove old obstacles
+            if (o.z < -100) obstacles.splice(i, 1);
+        }
+        ui.innerText = `Score: ${Math.floor(score)}`;
+    }
+
+    // --- DRAWING SECTION ---
+
+    // 1. Draw Horizon/Ground Grid for depth perception
+    ctx.strokeStyle = '#444';
+    for (let i = 0; i < 10; i++) {
+        const zPos = (i * 200) - (frame % 200); // Moving lines
+        const p1 = project(-500, 100, zPos);
+        const p2 = project(500, 100, zPos);
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(p2.x, p2.y);
+        ctx.stroke();
+    }
+
+    // 2. Draw Lane Markers
+    ctx.strokeStyle = '#666';
+    lanes.forEach(lx => {
+        const p1 = project(lx - 5, 100, 0);
+        const p2 = project(lx - 5, 100, 2000);
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(p2.x, p2.y);
+        ctx.stroke();
+    });
+
+    // 3. Draw Obstacles
+    obstacles.forEach(o => {
+        const pos = project(o.x, o.y + 100, o.z);
+        const size = o.w * pos.scale;
+        
+        if (o.z > 0) { // Don't draw if behind camera
+            ctx.fillStyle = o.color;
+            ctx.shadowBlur = 15 * pos.scale;
+            ctx.shadowColor = o.color;
+            ctx.fillRect(pos.x - size/2, pos.y - size, size, size);
+            ctx.shadowBlur = 0;
+        }
+    });
+
+    // 4. Draw Player
+    const pPos = project(player.currentX, player.y + 100, 50); // Fixed Z near camera
+    const pSize = 50 * pPos.scale;
+    ctx.fillStyle = '#0ff';
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = '#0ff';
+    // Draw player as a simple block/character
+    ctx.fillRect(pPos.x - pSize/2, pPos.y - pSize, pSize, pSize);
+    ctx.shadowBlur = 0;
+
+    requestAnimationFrame(update);
+}
+
+update();
+</script>
+</body>
+</html>
