@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VITALIS | The Standard of Life</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Outfit:wght@100;300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --color-cream: #F9F7F2;
+            --color-ink: #1A1A1A;
+            --color-accent: #8C7851; /* Muted Gold/Earth */
+        }
+        body { 
+            background-color: var(--color-cream); 
+            color: var(--color-ink);
+            font-family: 'Outfit', sans-serif;
+            overflow-x: hidden;
+        }
+        h1, h2, h3, .serif { font-family: 'Libre Baskerville', serif; }
+        
+        /* Custom Cursor for that 'Premium' feel */
+        #cursor {
+            width: 20px; height: 20px;
+            background: var(--color-accent);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            mix-blend-mode: multiply;
+            transition: transform 0.1s ease;
+        }
+        .reveal-text { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+        
+        /* High-end Image Treatment */
+        .img-container {
+            overflow: hidden;
+            background: #e5e5e5;
+        }
+        .img-container img {
+            transition: transform 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .img-container:hover img {
+            transform: scale(1.05);
+        }
+        /* The "Heavy" Divider */
+        .thick-divider {
+            height: 1px;
+            background: var(--color-ink);
+            width: 100%;
+            opacity: 0.1;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div id="cursor" class="hidden md:block"></div>
+    <!-- Navigation: Pure, Minimal, Mathematical -->
+    <nav class="fixed w-full z-50 mix-blend-difference text-white px-10 py-8 flex justify-between items-end">
+        <div class="text-2xl font-light tracking-[0.3em] uppercase">Vitalis</div>
+        <div class="hidden md:flex space-x-16 text-[10px] tracking-[0.4em] uppercase font-semibold">
+            <a href="#philosophy" class="hover:opacity-50 transition-opacity">Philosophy</a>
+            <a href="#expertise" class="hover:opacity-50 transition-opacity">Expertise</a>
+            <a href="#contact" class="hover:opacity-50 transition-opacity">Contact</a>
+        </div>
+        <div class="text-[10px] tracking-[0.2em] uppercase font-semibold border-b border-white pb-1 cursor-pointer">
+            Inquiry
+        </div>
+    </nav>
+    <!-- Hero: The Statement -->
+    <section class="min-h-screen flex flex-col justify-center px-6 md:px-20 relative">
+        <div class="max-w-6xl">
+            <div class="reveal-text">
+                <h1 class="text-6xl md:text-[120px] leading-[0.9] font-normal tracking-tight mb-12" id="hero-title">
+                    The sanctity <br> <i class="serif">of biological</i> <br> integrity.
+                </h1>
+            </div>
+            <div class="grid md:grid-cols-2 gap-20 items-end">
+                <p class="text-xl md:text-2xl font-light leading-relaxed text-slate-700 max-w-md">
+                    A clinical institution dedicated to the preservation and mastery of the human condition through empirical rigor.
+                </p>
+                <div class="pb-4">
+                    <div class="text-[10px] uppercase tracking-[0.5em] text-slate-400 mb-4">Est. 2024</div>
+                    <div class="thick-divider"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Hero Image: Macro Biology (High End) -->
+        <div class="absolute right-[-10%] top-[20%] w-1/2 h-[70%] img-container -z-10 opacity-40 hidden lg:block">
+            <img src="https://images.unsplash.com/photo-1530026405186-ed1f139313f8?auto=format&fit=crop&q=80&w=2000" class="w-full h-full object-cover" alt="Biology">
+        </div>
+    </section>
+    <!-- Section: Philosophy (The "Quiet" Section) -->
+    <section id="philosophy" class="py-40 px-6 md:px-20 bg-[#1a1a1a] text-[#F9F7F2]">
+        <div class="max-w-7xl mx-auto grid md:grid-cols-12 gap-10">
+            <div class="md:col-span-5">
+                <h2 class="text-4xl md:text-5xl leading-tight">Our foundation is built upon the immutable laws of nature.</h2>
+            </div>
+            <div class="md:col-span-7 md:col-start-7">
+                <p class="text-lg md:text-xl font-light text-slate-400 leading-relaxed mb-12">
+                    We do not chase trends. We do not follow the noise of the industry. We operate at the intersection of deep-time evolution and modern clinical precision. Every protocol is a mathematical derivation of what the human body requires to thrive.
+                </p>
+                <div class="grid grid-cols-2 gap-8">
+                    <div>
+                        <span class="block text-3xl serif italic mb-2">01</span>
+                        <span class="text-[10px] uppercase tracking-widest text-slate-500">Empirical Rigor</span>
+                    </div>
+                    <div>
+                        <span class="block text-3xl serif italic mb-2">02</span>
+                        <span class="text-[10px] uppercase tracking-widest text-slate-500">Biological Truth</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Section: The Expertise (Visual Heavy) -->
+    <section id="expertise" class="py-40 px-6 md:px-20">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-32">
+                <h2 class="text-5xl md:text-7xl leading-tight">Clinical <br>Specializations.</h2>
+                <div class="text-slate-400 text-sm uppercase tracking-widest max-w-xs text-right">
+                    Comprehensive diagnostic suites for the modern era.
+                </div>
+            </div>
+            <div class="grid md:grid-cols-3 gap-0 border-t border-slate-200">
+                <!-- Expertise 1 -->
+                <div class="group py-16 border-b md:border-b-0 md:border-r border-slate-200 p-8 hover:bg-white transition-colors duration-700">
+                    <span class="text-[10px] uppercase tracking-[0.3em] text-slate-400 block mb-12">I. Neuro-Preservation</span>
+                    <h3 class="text-3xl mb-6">Cognitive Longevity</h3>
+                    <p class="text-slate-500 font-light leading-relaxed mb-8">Safeguarding the neural architecture through neuro-regenerative therapies and synaptic optimization.</p>
+                    <div class="h-[1px] w-0 group-hover:w-full bg-slate-900 transition-all duration-700"></div>
+                </div>
+                <!-- Expertise 2 -->
+                <div class="group py-16 border-b md:border-b-0 md:border-r border-slate-200 p-8 hover:bg-white transition-colors duration-700">
+                    <span class="text-[10px] uppercase tracking-[0.3em] text-slate-400 block mb-12">II. Metabolic Mastery</span>
+                    <h3 class="text-3xl mb-6">Endocrine Equilibrium</h3>
+                    <p class="text-slate-500 font-light leading-relaxed mb-8">The precise calibration of hormonal cascades to ensure systemic homeostasis and vitality.</p>
+                    <div class="h-[1px] w-0 group-hover:w-full bg-slate-900 transition-all duration-700"></div>
+                </div>
+                <!-- Expertise 3 -->
+                <div class="group py-16 p-8 hover:bg-white transition-colors duration-700">
+                    <span class="text-[10px] uppercase tracking-[0.3em] text-slate-400 block mb-12">III. Genomic Integrity</span>
+                    <h3 class="text-3xl mb-6">Molecular Defense</h3>
+                    <p class="text-slate-500 font-light leading-relaxed mb-8">Real-time epigenetic monitoring and targeted intervention at the cellular level.</p>
+                    <div class="h-[1px] w-0 group-hover:w-full bg-slate-900 transition-all duration-700"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Final CTA: The Minimalist Close -->
+    <section id="contact" class="py-60 text-center px-6">
+        <div class="max-w-3xl mx-auto">
+            <h2 class="text-5xl md:text-7xl mb-12">Begin the dialogue.</h2>
+            <p class="text-slate-500 mb-16 text-lg font-light">Consultations are by invitation only. Requesting a dossier is the first step.</p>
+            <a href="#" class="inline-block text-sm uppercase tracking-[0.5em] font-semibold border-b-2 border-slate-900 pb-2 hover:text-slate-500 hover:border-slate-500 transition-all">
+                Request Dossier
+            </a>
+        </div>
+    </section>
+    <footer class="py-12 px-10 border-t border-slate-200 flex flex-col md:flex-row justify-between text-[10px] uppercase tracking-[0.3em] text-slate-400">
+        <div>&copy; 2024 Vitalis Institutional Health</div>
+        <div class="mt-4 md:mt-0">Geneva &bull; London &bull; New York</div>
+    </footer>
+    <script>
+        // Register GSAP Plugins
+        gsap.registerPlugin(ScrollTrigger);
+        // Custom Cursor Logic
+        const cursor = document.querySelector('#cursor');
+        document.addEventListener('mousemove', (e) => {
+            gsap.to(cursor, {
+                x: e.clientX - 10,
+                y: e.clientY - 10,
+                duration: 0.5,
+                ease: "power3.out"
+            });
+        });
+        // Hero Title Animation
+        gsap.from("#hero-title", {
+            y: 100,
+            opacity: 0,
+            duration: 2,
+            ease: "power4.out",
+            delay: 0.5
+        });
+        // Scroll Animations for sections
+        gsap.utils.toArray('section').forEach(section => {
+            gsap.from(section, {
+                opacity: 0,
+                y: 50,
+                duration: 1.5,
+                scrollTrigger: {
+                    trigger: section,
+                    start: "top 80%",
+                    toggleActions: "play none none none"
+                }
+            });
+        });
+        // Image Parallax/Scale Effect
+        gsap.to(".img-container img", {
+            yPercent: 20,
+            ease: "none",
+            scrollTrigger: {
+                trigger: ".img-container",
+                scrub: true
+            }
+        });
+    </script>
+</body>
+</html>
