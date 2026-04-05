@@ -11,3 +11,6 @@ Instruct running locally on dual GPUs setup.
 - Speed: 50-65 t/s
 - Context: 32K
 - Backend: LM Studio + Vulkan
+
+## Contents
+- [Single Page Chatbot](https://github.com/Shoggoth43/Gemma-4-26B-A4B-Generations/blob/main/Chatbot%20ASCII.html)
