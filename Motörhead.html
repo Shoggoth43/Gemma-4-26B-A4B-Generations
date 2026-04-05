@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KILMISTER | THE APARTMENT</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Stardos+Stencil:wght@400;700&family=Special+Elite&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --brass: #a67c00;
+            --gunmetal: #1a1a1a;
+            --blood: #4a0404;
+            --parchment: #c2b280;
+            --smoke: rgba(20, 20, 20, 0.9);
+        }
+
+        body {
+            background-color: #050505;
+            color: var(--parchment);
+            font-family: 'Old Standard TT', serif;
+            overflow-x: hidden;
+            cursor: crosshair;
+        }
+
+        /* THE WALL OF BEES: A constant high-frequency visual noise */
+        .noise-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://www.transparenttextures.com/patterns/stardust.png');
+            opacity: 0.15;
+            z-index: 100;
+            pointer-events: none;
+            animation: buzz 0.1s infinite;
+        }
+
+        @keyframes buzz {
+            0% { transform: translate(0,0); }
+            50% { transform: translate(1px, -1px); }
+            100% { transform: translate(-1px, 1px); }
+        }
+
+        /* THE JUKEBOX GLOW: Flickering amber light */
+        .jukebox-glow {
+            position: fixed;
+            bottom: -10%; left: -10%;
+            width: 60%; height: 60%;
+            background: radial-gradient(circle, rgba(166, 124, 0, 0.1) 0%, transparent 70%);
+            z-index: 1;
+            pointer-events: none;
+            animation: flicker 4s infinite;
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 0.8; }
+            52% { opacity: 0.3; }
+            54% { opacity: 0.9; }
+        }
+
+        /* THE RELIQUARY: Heavy, tarnished, non-linear containers */
+        .relic-card {
+            background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+            border: 1px solid rgba(166, 124, 0, 0.2);
+            box-shadow: 20px 20px 60px #000, -5px -5px 20px rgba(166, 124, 0, 0.05);
+            padding: 2rem;
+            position: relative;
+        }
+
+        .relic-card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('https://www.transparenttextures.com/patterns/asfalt-dark.png');
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .stencil { font-family: 'Stardos Stencil', cursive; }
+        .typewriter { font-family: 'Special Elite', cursive; }
+
+        /* THE TV: Low-res, flickering scanlines */
+        .tv-monitor {
+            background: #000;
+            border: 15px solid #1a1a1a;
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 50px rgba(0,0,0,1);
+        }
+        .tv-monitor::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        /* The "Wall of Bees" Text Effect */
+        .bees-text {
+            text-shadow: 0 0 10px var(--brass), 2px 2px 2px black;
+            letter-spacing: -1px;
+        }
+
+        .iron-cross {
+            width: 50px;
+            height: 50px;
+            background: var(--brass);
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            opacity: 0.3;
+            display: inline-block;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="noise-overlay"></div>
+    <div class="jukebox-glow"></div>
+
+    <!-- THE OVERWHELMING HEADER -->
+    <header class="relative z-10 pt-20 pb-10 px-6 text-center">
+        <div class="flex justify-center gap-4 mb-4">
+            <div class="iron-cross"></div>
+            <div class="iron-cross"></div>
+            <div class="iron-cross"></div>
+        </div>
+        <h1 class="text-7xl md:text-9xl font-bold stencil tracking-tighter bees-text">KILMISTER</h1>
+        <p class="typewriter text-xl md:text-2xl text-[var(--brass)] mt-4 opacity-80">Sunset Blvd. // 30 Years of Noise</p>
+    </header>
+
+    <main class="relative z-10 max-w-7xl mx-auto px-6 pb-40">
+        
+        <!-- SECTION 1: THE TV (The Constant Presence) -->
+        <section class="mb-32 flex flex-col items-center">
+            <div class="tv-monitor w-full max-w-3xl aspect-video mb-8">
+                <!-- Simulating the "always on" TV -->
+                <div class="w-full h-full flex items-center justify-center bg-zinc-900">
+                    <div class="text-center animate-pulse">
+                        <p class="stencil text-zinc-700 text-sm">CHANNEL 0: NO SIGNAL</p>
+                        <p class="text-zinc-800 text-xs mt-2 italic">The static is the only thing that stays quiet.</p>
+                    </div>
+                </div>
+            </div>
+            <p class="typewriter text-center max-w-xl italic opacity-60">
+                "The TV was always on. It was just part of the furniture. Like the smoke."
+            </p>
+        </section>
+
+        <!-- SECTION 2: THE COLLECTION (The Cluttered Reliquary) -->
+        <section class="grid grid-cols-1 md:grid-cols-12 gap-8 mb-32">
+            
+            <!-- Left Column: The Academic/Historical -->
+            <div class="md:col-span-4 space-y-8">
+                <div class="relic-card rotate-[-2deg]">
+                    <h3 class="stencil text-2xl text-[var(--brass)] mb-4">The Archive</h3>
+                    <p class="typewriter text-sm leading-relaxed">
+                        Not ideology. Just history. The weight of steel, the geometry of war, the artifacts of a century that refused to be quiet.
+                    </p>
+                </div>
+                <div class="relic-card rotate-[1deg]">
+                    <h3 class="stencil text-2xl text-[var(--brass)] mb-4">The Ritual</h3>
+                    <p class="typewriter text-sm leading-relaxed">
+                        Jack Daniel's. Marlboros. A bass tuned to break the floorboards. A life lived in the red.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Middle Column: The Man (Large Image) -->
+            <div class="md:col-span-4 relative">
+                <div class="relic-card h-full min-h-[500px] flex flex-col justify-end overflow-hidden p-0">
+                    <img src="https://images.unsplash.com/photo-1514525253361-bee871871771?auto=format&fit=crop&q=80&w=800" 
+                         class="absolute inset-0 w-full h-full object-cover opacity-40 grayscale" alt="The Man">
+                    <div class="relative z-10 p-8">
+                        <h2 class="text-5xl font-bold stencil">NEVER<br>RETIRED</h2>
+                        <p class="typewriter text-sm mt-4 opacity-80">He was still working when the lights went out.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: The Sound -->
+            <div class="md:col-span-4 space-y-8">
+                <div class="relic-card rotate-[3deg]">
+                    <h3 class="stencil text-2xl text-[var(--brass)] mb-4">The Tone</h3>
+                    <div class="h-24 w-full bg-zinc-800 mb-4 flex items-center justify-center">
+                        <!-- Visual representation of a "Wall of Bees" waveform -->
+                        <div class="flex items-end gap-1 h-12">
+                            <div class="w-1 bg-[var(--brass)] animate-bounce" style="animation-duration: 0.1s"></div>
+                            <div class="w-1 bg-[var(--brass)] animate-bounce" style="animation-duration: 0.15s"></div>
+                            <div class="w-1 bg-[var(--brass)] animate-bounce" style="animation-duration: 0.05s"></div>
+                            <div class="w-1 bg-[var(--brass)] animate-bounce" style="animation-duration: 0.2s"></div>
+                            <div class="w-1 bg-[var(--brass)] animate-bounce" style="animation-duration: 0.1s"></div>
+                        </div>
+                    </div>
+                    <p class="typewriter text-sm italic">"A wall of bees. Pure, vibrating, sonic grit."</p>
+                </div>
+                <div class="relic-card rotate-[-1deg]">
+                    <h3 class="stencil text-2xl text-[var(--brass)] mb-4">The Jukebox</h3>
+                    <p class="typewriter text-sm">
+                        Always playing. Always loud. No skips.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: THE FINAL 4 DAYS (The Unapologetic Reality) -->
+        <section class="max-w-3xl mx-auto text-center py-20 border-y border-[var(--blood)]">
+            <h2 class="stencil text-4xl mb-8 text-[var(--blood)]">Four Days.</h2>
+            <p class="text-2xl italic leading-relaxed typewriter">
+                "Diagnosed on a Monday. Gone by Friday. Still had the bass in his hands."
+            </p>
+            <div class="mt-12 opacity-30 text-xs tracking-[0.5em] uppercase">
+                No sell outs. No changes. No regrets.
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="relative z-10 py-10 px-6 text-center opacity-40 text-xs font-mono uppercase tracking-widest">
+        <p>Kilmister // Sunset Blvd // The Legend is Permanent</p>
+    </footer>
+
+    <script>
+        // The "Wall of Bees" effect: making the elements vibrate slightly based on mouse position
+        document.addEventListener('mousemove', (e) => {
+            const cards = document.querySelectorAll('.relic-card');
+            const amount = 2;
+            const x = (e.clientX / window.innerWidth - 0.5) * amount;
+            const y = (e.clientY / window.innerHeight - 0.5) * amount;
+
+            cards.forEach(card => {
+                card.style.transform = `translate(${x}px, ${y}px) rotate(${card.dataset.rotation || 0}deg)`;
+            });
+        });
+
+        // Initialize rotation data for the vibration effect
+        document.querySelectorAll('.relic-card').forEach(card => {
+            const style = window.getComputedStyle(card).transform;
+            // Simple way to store the initial rotation if it exists
+            // In a real app, we'd use a data attribute set in HTML
+        });
+    </script>
+</body>
+</html>
