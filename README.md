@@ -7,7 +7,6 @@ Instruct running locally on dual GPUs setup.
 - GPU 1: AMD RX 7900 XT (20GB VRAM)
 - GPU 2: RTX 3060 Ti
 - RAM: 32GB DDR5 CL30 6000 MT/s
-- Model: Gemma 4 26B A4B Instruct (Unsloth UD Q6_K)
 - Speed: 50-65 t/s
 - Context: 32K
 - Backend: LM Studio + Vulkan
