@@ -17,3 +17,5 @@ Instruct running locally on dual GPUs setup.
 - [Medical Landing Page v2](https://github.com/Shoggoth43/Gemma-4-26B-A4B-Generations/blob/main/Medical%20Landing%20Page%20v2.html)
 - [Motörhead](https://github.com/Shoggoth43/Gemma-4-26B-A4B-Generations/blob/main/Motörhead.html)
 - [Chernobyl](https://github.com/Shoggoth43/Gemma-4-26B-A4B-Generations/blob/main/Chernobyl.html)
+- [NASA Voyager 1](https://github.com/Shoggoth43/Gemma-4-26B-A4B-Generations/blob/main/NASA%20Voyager%201.html)
+- [Subway Surfers Clone](https://github.com/Shoggoth43/Gemma-4-26B-A4B-Generations/blob/main/Subway%20Surfers%20Clone.html)
