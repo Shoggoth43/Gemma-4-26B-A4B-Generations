@@ -20,3 +20,4 @@ Instruct running locally on dual GPUs setup.
 - [NASA Voyager 1](https://github.com/Shoggoth43/Gemma-4-26B-A4B-Generations/blob/main/NASA%20Voyager%201.html)
 - [Subway Surfers Clone](https://github.com/Shoggoth43/Gemma-4-26B-A4B-Generations/blob/main/Subway%20Surfers%20Clone.html)
 - [Manhattan Bridge Waves Simulator](https://github.com/Shoggoth43/Gemma-4-26B-A4B-Generations/blob/main/Waves%20Simulator.html)
+- [Jailbreak Attempts Q&A](https://github.com/Shoggoth43/Gemma-4-26B-A4B-Generations/blob/main/Jailbreak%20Attempts%20Q%26A%20—%20Claude%20Tuned%20System%20Prompt.txt)
